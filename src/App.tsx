@@ -12,7 +12,9 @@ const InheritanceCalculator = () => {
     daughters: 0
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: {
+    target: { name: any; value: any; type: any; checked: any };
+  }) => {
     const { name, value, type, checked } = e.target;
     setHeirs((prev) => ({
       ...prev,
@@ -124,7 +126,7 @@ const InheritanceCalculator = () => {
     const remainderD = spouseDenominator;
 
     // Use Math.round to strip floating point noise
-    const getShare = (w, isChild = false) => {
+    const getShare = (w: number, isChild = false) => {
       const div = isChild
         ? weights.total * remainderD * weights.cDiv
         : weights.total * remainderD;
@@ -148,7 +150,7 @@ const InheritanceCalculator = () => {
       settle: getShare(weights.settle)
     };
 
-    const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
+    const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
 
     let allVals = [result.total, result.settle];
     if (fatherAlive) {
@@ -323,7 +325,7 @@ const InheritanceCalculator = () => {
       </div>
 
       <table
-        border="1"
+        border={1}
         style={{
           width: '100%',
           marginTop: '20px',
