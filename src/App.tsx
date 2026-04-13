@@ -4,7 +4,7 @@ const InheritanceCalculator = () => {
   const [heirs, setHeirs] = useState({
     fatherAlive: true,
     motherAlive: true,
-    hasSC: false, // Siblings Condition (Ruling 2749/2750)
+    hasSC: false,
     wives: 1,
     husband: false,
     deceasedIsMale: true,
@@ -12,13 +12,19 @@ const InheritanceCalculator = () => {
     daughters: 0
   });
 
-  const handleChange = (e: {
-    target: { name: any; value: any; type: any; checked: any };
-  }) => {
+  // --- LOGIC UNCHANGED ---
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setHeirs((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : Math.max(0, parseInt(value) || 0)
+    }));
+  };
+
+  const updateCount = (name, delta) => {
+    setHeirs((prev) => ({
+      ...prev,
+      [name]: Math.max(0, prev[name] + delta)
     }));
   };
 
@@ -35,8 +41,7 @@ const InheritanceCalculator = () => {
     } = heirs;
     const numChildren = sons + daughters;
     const hasChildren = numChildren > 0;
-    const ratioParts = sons * 2 + daughters || 1; // Integer divisor for children split
-
+    const ratioParts = sons * 2 + daughters || 1;
     let spouseNumerator = 0;
     let spouseDenominator = 1;
     if (deceasedIsMale) {
@@ -50,10 +55,7 @@ const InheritanceCalculator = () => {
         spouseDenominator = hasChildren ? 4 : 2;
       }
     }
-
-    // Weights are now strictly integers
     let weights = { f: 0, m: 0, s: 0, d: 0, settle: 0, total: 1, cDiv: 1 };
-
     if (fatherAlive && motherAlive && !hasChildren) {
       if (hasSC) {
         weights.m = 1;
@@ -83,7 +85,7 @@ const InheritanceCalculator = () => {
       weights.total = 6;
       weights.s = 8;
       weights.d = 4;
-      weights.cDiv = ratioParts; // Move ratioParts to divisor
+      weights.cDiv = ratioParts;
     } else if (fatherAlive && motherAlive && sons === 0 && daughters > 1) {
       weights.f = 1;
       weights.m = 1;
@@ -119,20 +121,15 @@ const InheritanceCalculator = () => {
       else weights.settle = 1;
       weights.total = 1;
     }
-
-    // Ensure L is a multiple of all potential denominators
     const L = weights.total * spouseDenominator * (wives || 1) * weights.cDiv;
     const remainderN = spouseDenominator - spouseNumerator;
     const remainderD = spouseDenominator;
-
-    // Use Math.round to strip floating point noise
-    const getShare = (w: number, isChild = false) => {
+    const getShare = (w, isChild = false) => {
       const div = isChild
         ? weights.total * remainderD * weights.cDiv
         : weights.total * remainderD;
       return Math.round((w * remainderN * L) / div);
     };
-
     const result = {
       total: L,
       father: getShare(weights.f),
@@ -149,34 +146,16 @@ const InheritanceCalculator = () => {
       daughter: getShare(weights.d, true),
       settle: getShare(weights.settle)
     };
-
-    const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
-
+    const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b));
     let allVals = [result.total, result.settle];
-    if (fatherAlive) {
-      allVals.push(result.father);
-    }
-    if (motherAlive) {
-      allVals.push(result.mother);
-    }
-    if (husband) {
-      allVals.push(result.husband);
-    }
-    if (wives > 0) {
-      allVals.push(result.wife);
-    }
-    if (sons > 0) {
-      allVals.push(result.son);
-    }
-    if (daughters > 0) {
-      allVals.push(result.daughter);
-    }
+    if (fatherAlive) allVals.push(result.father);
+    if (motherAlive) allVals.push(result.mother);
+    if (husband) allVals.push(result.husband);
+    if (wives > 0) allVals.push(result.wife);
+    if (sons > 0) allVals.push(result.son);
+    if (daughters > 0) allVals.push(result.daughter);
     allVals = allVals.filter((v) => v > 0);
-
     const common = allVals.reduce((a, b) => gcd(a, b), allVals[0]);
-    console.log(result);
-    console.log(allVals, common);
-
     return {
       total: result.total / common,
       father: result.father / common,
@@ -191,32 +170,83 @@ const InheritanceCalculator = () => {
 
   const res = calculate();
 
+  // --- STYLES ---
+  const btnStyle = {
+    padding: '10px 15px',
+    fontSize: '18px',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    backgroundColor: '#fff',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    width: '45px'
+  };
+
+  const checkboxStyle = {
+    width: '24px',
+    height: '24px',
+    verticalAlign: 'middle',
+    marginRight: '10px'
+  };
+
+  const cardStyle = {
+    background: '#fff',
+    padding: '15px',
+    borderRadius: '8px',
+    marginBottom: '15px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+  };
+
+  // Reusable component for +/- inputs
+  const Stepper = ({ label, name, value }) => (
+    <div style={{ marginBottom: '15px' }}>
+      <div style={{ marginBottom: '5px', fontWeight: 'bold' }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button style={btnStyle} onClick={() => updateCount(name, -1)}>
+          -
+        </button>
+        <input
+          type="number"
+          name={name}
+          value={value}
+          onChange={handleChange}
+          style={{
+            width: '60px',
+            textAlign: 'center',
+            fontSize: '18px',
+            padding: '8px',
+            WebkitAppearance: 'none',
+            MozAppearance: 'textfield'
+          }}
+        />
+        <button style={btnStyle} onClick={() => updateCount(name, 1)}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div
       style={{
-        padding: '20px',
+        padding: '15px',
         fontFamily: 'sans-serif',
-        maxWidth: '800px',
-        margin: 'auto'
+        maxWidth: '500px',
+        margin: 'auto',
+        backgroundColor: '#f9f9f9'
       }}
     >
-      <h2>Inheritance Calculator</h2>
+      <style>{`input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }`}</style>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '20px',
-          background: '#f4f4f4',
-          padding: '20px',
-          borderRadius: '8px'
-        }}
-      >
-        <div>
-          <h4>Deceased Info</h4>
-          <label>
+      <h2 style={{ textAlign: 'center' }}>Inheritance Calculator</h2>
+
+      <div style={cardStyle}>
+        <h4>Deceased Info</h4>
+        <div style={{ marginBottom: '15px', display: 'flex', gap: '20px' }}>
+          <label style={{ fontSize: '18px' }}>
             <input
               type="radio"
+              style={checkboxStyle}
               checked={heirs.deceasedIsMale}
               onChange={() =>
                 setHeirs({ ...heirs, deceasedIsMale: true, husband: false })
@@ -224,9 +254,10 @@ const InheritanceCalculator = () => {
             />{' '}
             Male
           </label>
-          <label style={{ marginLeft: '10px' }}>
+          <label style={{ fontSize: '18px' }}>
             <input
               type="radio"
+              style={checkboxStyle}
               checked={!heirs.deceasedIsMale}
               onChange={() =>
                 setHeirs({ ...heirs, deceasedIsMale: false, wives: 0 })
@@ -234,130 +265,128 @@ const InheritanceCalculator = () => {
             />{' '}
             Female
           </label>
-          <br />
-          <br />
-          {heirs.deceasedIsMale ? (
-            <label>
-              Number of Wives:{' '}
-              <input
-                type="number"
-                name="wives"
-                value={heirs.wives}
-                onChange={handleChange}
-                style={{ width: '40px' }}
-              />
-            </label>
-          ) : (
-            <label>
-              <input
-                type="checkbox"
-                name="husband"
-                checked={heirs.husband}
-                onChange={handleChange}
-              />{' '}
-              Husband is alive
-            </label>
-          )}
         </div>
 
-        <div>
-          <h4>Parents & Siblings</h4>
-          <label>
+        {heirs.deceasedIsMale ? (
+          <Stepper label="Number of Wives" name="wives" value={heirs.wives} />
+        ) : (
+          <label
+            style={{ display: 'block', fontSize: '18px', padding: '10px 0' }}
+          >
             <input
               type="checkbox"
-              name="fatherAlive"
-              checked={heirs.fatherAlive}
+              name="husband"
+              style={checkboxStyle}
+              checked={heirs.husband}
               onChange={handleChange}
             />{' '}
-            Father alive
+            Husband is alive
           </label>
-          <br />
-          <label>
-            <input
-              type="checkbox"
-              name="motherAlive"
-              checked={heirs.motherAlive}
-              onChange={handleChange}
-            />{' '}
-            Mother alive
-          </label>
-          <br />
-          {heirs.fatherAlive &&
-            heirs.motherAlive &&
-            heirs.sons === 0 &&
-            heirs.daughters <= 1 && (
-              <label style={{ color: '#666', fontSize: '0.9em' }}>
-                <input
-                  type="checkbox"
-                  name="hasSC"
-                  checked={heirs.hasSC}
-                  onChange={handleChange}
-                />
-                Sibling condition?
-              </label>
-            )}
-        </div>
-
-        <div>
-          <h4>Children</h4>
-          <label>
-            Sons:{' '}
-            <input
-              type="number"
-              name="sons"
-              value={heirs.sons}
-              onChange={handleChange}
-              style={{ width: '40px' }}
-            />
-          </label>
-          <br />
-          <label>
-            Daughters:{' '}
-            <input
-              type="number"
-              name="daughters"
-              value={heirs.daughters}
-              onChange={handleChange}
-              style={{ width: '40px' }}
-            />
-          </label>
-        </div>
+        )}
       </div>
 
-      <table
-        border={1}
+      <div style={cardStyle}>
+        <h4>Parents & Siblings</h4>
+        <label
+          style={{ display: 'block', fontSize: '18px', padding: '10px 0' }}
+        >
+          <input
+            type="checkbox"
+            name="fatherAlive"
+            style={checkboxStyle}
+            checked={heirs.fatherAlive}
+            onChange={handleChange}
+          />{' '}
+          Father alive
+        </label>
+        <label
+          style={{ display: 'block', fontSize: '18px', padding: '10px 0' }}
+        >
+          <input
+            type="checkbox"
+            name="motherAlive"
+            style={checkboxStyle}
+            checked={heirs.motherAlive}
+            onChange={handleChange}
+          />{' '}
+          Mother alive
+        </label>
+        {heirs.fatherAlive &&
+          heirs.motherAlive &&
+          heirs.sons === 0 &&
+          heirs.daughters <= 1 && (
+            <label
+              style={{
+                display: 'block',
+                color: '#666',
+                fontSize: '16px',
+                padding: '10px 0',
+                marginLeft: '34px'
+              }}
+            >
+              <input
+                type="checkbox"
+                name="hasSC"
+                style={checkboxStyle}
+                checked={heirs.hasSC}
+                onChange={handleChange}
+              />{' '}
+              Sibling condition?
+            </label>
+          )}
+      </div>
+
+      <div style={cardStyle}>
+        <h4>Children</h4>
+        <Stepper label="Sons" name="sons" value={heirs.sons} />
+        <Stepper label="Daughters" name="daughters" value={heirs.daughters} />
+      </div>
+
+      <div
         style={{
-          width: '100%',
-          marginTop: '20px',
-          borderCollapse: 'collapse',
-          textAlign: 'center'
+          overflowX: 'auto',
+          background: '#fff',
+          borderRadius: '8px',
+          padding: '10px'
         }}
       >
-        <thead style={{ background: '#eee' }}>
-          <tr>
-            <th>Total Units</th>
-            {heirs.fatherAlive && <th>Father</th>}
-            {heirs.motherAlive && <th>Mother</th>}
-            {heirs.husband && <th>Husband</th>}
-            {heirs.wives > 0 && <th>Each Wife</th>}
-            {heirs.sons > 0 && <th>Each Son</th>}
-            {heirs.daughters > 0 && <th>Each Daughter</th>}
-            {res.settle > 0 && <th>Musalahah</th>}
-          </tr>
-        </thead>
-        <tbody>
-          <tr style={{ fontSize: '1.2em', fontWeight: 'bold' }}>
-            <td>{res.total}</td>
-            {heirs.fatherAlive && <td>{res.father}</td>}
-            {heirs.motherAlive && <td>{res.mother}</td>}
-            {heirs.husband && <td>{res.husband}</td>}
-            {heirs.wives > 0 && <td>{res.wife}</td>}
-            {heirs.sons > 0 && <td>{res.son}</td>}
-            {heirs.daughters > 0 && <td>{res.daughter}</td>}
-            {res.settle > 0 && <td style={{ color: 'blue' }}>{res.settle}</td>}
-          </tr>
-        </tbody>
-      </table>
+        <table
+          border={1}
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            textAlign: 'center',
+            fontSize: '14px'
+          }}
+        >
+          <thead style={{ background: '#eee' }}>
+            <tr>
+              <th style={{ padding: '8px' }}>Total</th>
+              {heirs.fatherAlive && <th>Father</th>}
+              {heirs.motherAlive && <th>Mother</th>}
+              {heirs.husband && <th>Husband</th>}
+              {heirs.wives > 0 && <th>Wife</th>}
+              {heirs.sons > 0 && <th>Son</th>}
+              {heirs.daughters > 0 && <th>Daughter</th>}
+              {res.settle > 0 && <th>Mslh.</th>}
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+              <td style={{ padding: '12px 8px' }}>{res.total}</td>
+              {heirs.fatherAlive && <td>{res.father}</td>}
+              {heirs.motherAlive && <td>{res.mother}</td>}
+              {heirs.husband && <td>{res.husband}</td>}
+              {heirs.wives > 0 && <td>{res.wife}</td>}
+              {heirs.sons > 0 && <td>{res.son}</td>}
+              {heirs.daughters > 0 && <td>{res.daughter}</td>}
+              {res.settle > 0 && (
+                <td style={{ color: 'blue' }}>{res.settle}</td>
+              )}
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
