@@ -30,8 +30,8 @@ const InheritanceCalculator: React.FC = () => {
     wives: 1,
     husband: false,
     deceasedIsMale: true,
-    sons: 4,
-    daughters: 0
+    sons: 2,
+    daughters: 2
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
