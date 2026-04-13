@@ -263,7 +263,7 @@ const InheritanceCalculator: React.FC = () => {
   };
 
   const labelStyle: React.CSSProperties = {
-    fontSize: '14px',
+    fontSize: '16px',
     color: '#334155',
     fontWeight: 500
   };
@@ -317,14 +317,14 @@ const InheritanceCalculator: React.FC = () => {
           <h3
             style={{
               margin: '0',
-              fontSize: '17px',
-              fontWeight: 500,
+              fontSize: '20px',
+              fontWeight: 700,
               color: '#0f172a'
             }}
           >
             Inheritance calculator
           </h3>
-          <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+          <p style={{ margin: '2px 0 0', fontSize: '18px', color: '#64748b' }}>
             Islamic estate distribution
           </p>
         </header>
@@ -346,7 +346,7 @@ const InheritanceCalculator: React.FC = () => {
                 backgroundColor: heirs.deceasedIsMale ? '#eff6ff' : '#fff',
                 color: heirs.deceasedIsMale ? '#1d4ed8' : '#64748b',
                 fontWeight: 500,
-                fontSize: '13px',
+                fontSize: '16px',
                 cursor: 'pointer'
               }}
             >
@@ -366,7 +366,7 @@ const InheritanceCalculator: React.FC = () => {
                 backgroundColor: !heirs.deceasedIsMale ? '#eff6ff' : '#fff',
                 color: !heirs.deceasedIsMale ? '#1d4ed8' : '#64748b',
                 fontWeight: 500,
-                fontSize: '13px',
+                fontSize: '16px',
                 cursor: 'pointer'
               }}
             >
@@ -383,15 +383,12 @@ const InheritanceCalculator: React.FC = () => {
                 <div
                   style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <span style={{ fontSize: '13px', color: '#64748b' }}>
-                    Present
-                  </span>
                   <input
                     type="checkbox"
                     name="husband"
                     style={{
-                      width: '18px',
-                      height: '18px',
+                      width: '24px',
+                      height: '24px',
                       accentColor: '#2563eb'
                     }}
                     checked={heirs.husband}
@@ -422,8 +419,8 @@ const InheritanceCalculator: React.FC = () => {
                   type="checkbox"
                   name="fatherAlive"
                   style={{
-                    width: '18px',
-                    height: '18px',
+                    width: '24px',
+                    height: '24px',
                     accentColor: '#2563eb'
                   }}
                   checked={heirs.fatherAlive}
@@ -445,8 +442,8 @@ const InheritanceCalculator: React.FC = () => {
                   type="checkbox"
                   name="motherAlive"
                   style={{
-                    width: '18px',
-                    height: '18px',
+                    width: '24px',
+                    height: '24px',
                     accentColor: '#2563eb'
                   }}
                   checked={heirs.motherAlive}
@@ -469,8 +466,8 @@ const InheritanceCalculator: React.FC = () => {
                     type="checkbox"
                     name="hasSC"
                     style={{
-                      width: '18px',
-                      height: '18px',
+                      width: '24px',
+                      height: '24px',
                       accentColor: '#dc2626'
                     }}
                     checked={heirs.hasSC}
@@ -506,7 +503,7 @@ const InheritanceCalculator: React.FC = () => {
           >
             <span
               style={{
-                fontSize: '11px',
+                fontSize: '13px',
                 fontWeight: 500,
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
@@ -520,7 +517,7 @@ const InheritanceCalculator: React.FC = () => {
             style={{
               width: '100%',
               borderCollapse: 'collapse',
-              fontSize: '13px'
+              fontSize: '16px'
             }}
           >
             <tbody>
@@ -529,7 +526,7 @@ const InheritanceCalculator: React.FC = () => {
                 <td
                   style={{
                     padding: '6px 8px',
-                    fontWeight: 500,
+                    fontWeight: 700,
                     color: '#0f172a'
                   }}
                 >
@@ -539,8 +536,8 @@ const InheritanceCalculator: React.FC = () => {
                   style={{
                     padding: '6px 8px',
                     textAlign: 'right',
-                    fontWeight: 500,
-                    fontSize: '15px',
+                    fontWeight: 800,
+                    fontSize: '18px',
                     color: '#2563eb'
                   }}
                 >
