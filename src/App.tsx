@@ -1,6 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
 
-// --- TYPES (UNTOUCHED) ---
 interface HeirsState {
   fatherAlive: boolean;
   motherAlive: boolean;
@@ -35,7 +34,6 @@ const InheritanceCalculator: React.FC = () => {
     daughters: 0
   });
 
-  // --- LOGIC (UNTOUCHED) ---
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setHeirs((prev) => ({
@@ -201,14 +199,21 @@ const InheritanceCalculator: React.FC = () => {
 
   const res = calculate();
 
+  const showSiblings =
+    heirs.fatherAlive &&
+    heirs.motherAlive &&
+    heirs.sons === 0 &&
+    heirs.daughters <= 1;
+
   // --- STYLES ---
+
   const containerStyle: React.CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
     width: '100%',
     minHeight: '100vh',
     margin: '0 auto',
-    padding: '16px 12px',
+    padding: '10px 12px',
     boxSizing: 'border-box',
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -218,32 +223,49 @@ const InheritanceCalculator: React.FC = () => {
 
   const innerWrapperStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: '500px' // Centers and prevents stretching on desktop
+    maxWidth: '420px'
   };
 
   const cardStyle: React.CSSProperties = {
     background: '#ffffff',
-    padding: '16px',
+    padding: '10px 14px',
     borderRadius: '12px',
-    marginBottom: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-    border: '1px solid #e2e8f0'
+    marginBottom: '8px',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+    border: '0.5px solid #e2e8f0'
   };
 
   const btnStyle: React.CSSProperties = {
-    padding: '8px',
-    fontSize: '20px',
+    width: '32px',
+    height: '32px',
+    fontSize: '18px',
     backgroundColor: '#f1f5f9',
-    border: '1px solid #cbd5e1',
+    border: '0.5px solid #cbd5e1',
     borderRadius: '8px',
-    width: '48px',
-    height: '48px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
     touchAction: 'manipulation',
-    userSelect: 'none'
+    userSelect: 'none',
+    lineHeight: 1
+  };
+
+  const rowStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '5px 0'
+  };
+
+  const rowDividerStyle: React.CSSProperties = {
+    borderTop: '0.5px solid #f1f5f9'
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: '14px',
+    color: '#334155',
+    fontWeight: 500
   };
 
   const Stepper = ({
@@ -255,31 +277,22 @@ const InheritanceCalculator: React.FC = () => {
     name: keyof HeirsState;
     value: number;
   }) => (
-    <div
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        margin: '12px 0'
-      }}
-    >
-      <span style={{ fontWeight: 600, fontSize: '16px', color: '#334155' }}>
-        {label}
-      </span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div style={rowStyle}>
+      <span style={labelStyle}>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <button
           style={btnStyle}
           onClick={() => updateCount(name, -1)}
           aria-label="decrease"
         >
-          -
+          −
         </button>
         <span
           style={{
-            minWidth: '30px',
+            minWidth: '24px',
             textAlign: 'center',
-            fontSize: '18px',
-            fontWeight: '700',
+            fontSize: '15px',
+            fontWeight: 500,
             color: '#1e293b'
           }}
         >
@@ -299,43 +312,45 @@ const InheritanceCalculator: React.FC = () => {
   return (
     <div style={containerStyle}>
       <div style={innerWrapperStyle}>
-        <header style={{ textAlign: 'center', marginBottom: '20px' }}>
+        {/* Header */}
+        <header style={{ textAlign: 'center', marginBottom: '10px' }}>
           <h3
             style={{
               margin: '0',
-              fontSize: '22px',
-              fontWeight: '800',
+              fontSize: '17px',
+              fontWeight: 500,
               color: '#0f172a'
             }}
           >
-            Inheritance Calculator
+            Inheritance calculator
           </h3>
-          <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#64748b' }}>
-            Islamic Estate Distribution
+          <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748b' }}>
+            Islamic estate distribution
           </p>
         </header>
 
-        {/* Gender/Spouse Card */}
+        {/* Gender / Spouse Card */}
         <div style={cardStyle}>
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
             <button
               onClick={() =>
                 setHeirs({ ...heirs, deceasedIsMale: true, husband: false })
               }
               style={{
                 flex: 1,
-                padding: '12px',
+                padding: '8px 4px',
                 borderRadius: '8px',
                 border: heirs.deceasedIsMale
-                  ? '2px solid #2563eb'
-                  : '1px solid #e2e8f0',
+                  ? '1.5px solid #2563eb'
+                  : '0.5px solid #e2e8f0',
                 backgroundColor: heirs.deceasedIsMale ? '#eff6ff' : '#fff',
                 color: heirs.deceasedIsMale ? '#1d4ed8' : '#64748b',
-                fontWeight: '600',
-                fontSize: '15px'
+                fontWeight: 500,
+                fontSize: '13px',
+                cursor: 'pointer'
               }}
             >
-              Male Deceased
+              Male deceased
             </button>
             <button
               onClick={() =>
@@ -343,336 +358,317 @@ const InheritanceCalculator: React.FC = () => {
               }
               style={{
                 flex: 1,
-                padding: '12px',
+                padding: '8px 4px',
                 borderRadius: '8px',
                 border: !heirs.deceasedIsMale
-                  ? '2px solid #2563eb'
-                  : '1px solid #e2e8f0',
+                  ? '1.5px solid #2563eb'
+                  : '0.5px solid #e2e8f0',
                 backgroundColor: !heirs.deceasedIsMale ? '#eff6ff' : '#fff',
                 color: !heirs.deceasedIsMale ? '#1d4ed8' : '#64748b',
-                fontWeight: '600',
-                fontSize: '15px'
+                fontWeight: 500,
+                fontSize: '13px',
+                cursor: 'pointer'
               }}
             >
-              Female Deceased
+              Female deceased
             </button>
           </div>
 
-          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '8px' }}>
+          <div style={{ borderTop: '0.5px solid #f1f5f9', paddingTop: '2px' }}>
             {heirs.deceasedIsMale ? (
               <Stepper label="Wives" name="wives" value={heirs.wives} />
             ) : (
-              <label
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '12px 0',
-                  cursor: 'pointer'
-                }}
-              >
-                <span
-                  style={{
-                    fontWeight: 600,
-                    fontSize: '16px',
-                    color: '#334155'
-                  }}
+              <div style={rowStyle}>
+                <span style={labelStyle}>Husband</span>
+                <div
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                 >
-                  Husband
-                </span>
-                <input
-                  type="checkbox"
-                  name="husband"
-                  style={{
-                    width: '28px',
-                    height: '28px',
-                    accentColor: '#2563eb'
-                  }}
-                  checked={heirs.husband}
-                  onChange={handleChange}
-                />
-              </label>
+                  <span style={{ fontSize: '13px', color: '#64748b' }}>
+                    Present
+                  </span>
+                  <input
+                    type="checkbox"
+                    name="husband"
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      accentColor: '#2563eb'
+                    }}
+                    checked={heirs.husband}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
             )}
           </div>
         </div>
 
         {/* Parents Card */}
         <div style={cardStyle}>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))',
-              gap: '15px'
-            }}
-          >
-            <label
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <span
+          <div style={{ ...rowStyle }}>
+            <span style={labelStyle}>Parents alive</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <label
                 style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#475569'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '13px',
+                  color: '#475569',
+                  cursor: 'pointer'
                 }}
               >
+                <input
+                  type="checkbox"
+                  name="fatherAlive"
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    accentColor: '#2563eb'
+                  }}
+                  checked={heirs.fatherAlive}
+                  onChange={handleChange}
+                />
                 Father
-              </span>
-              <input
-                type="checkbox"
-                name="fatherAlive"
+              </label>
+              <label
                 style={{
-                  width: '32px',
-                  height: '32px',
-                  accentColor: '#2563eb'
-                }}
-                checked={heirs.fatherAlive}
-                onChange={handleChange}
-              />
-            </label>
-            <label
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '8px',
-                cursor: 'pointer'
-              }}
-            >
-              <span
-                style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  color: '#475569'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  fontSize: '13px',
+                  color: '#475569',
+                  cursor: 'pointer'
                 }}
               >
+                <input
+                  type="checkbox"
+                  name="motherAlive"
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    accentColor: '#2563eb'
+                  }}
+                  checked={heirs.motherAlive}
+                  onChange={handleChange}
+                />
                 Mother
-              </span>
-              <input
-                type="checkbox"
-                name="motherAlive"
-                style={{
-                  width: '32px',
-                  height: '32px',
-                  accentColor: '#2563eb'
-                }}
-                checked={heirs.motherAlive}
-                onChange={handleChange}
-              />
-            </label>
-            {heirs.fatherAlive &&
-              heirs.motherAlive &&
-              heirs.sons === 0 &&
-              heirs.daughters <= 1 && (
+              </label>
+              {showSiblings && (
                 <label
                   style={{
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: '5px',
+                    fontSize: '13px',
+                    color: '#dc2626',
                     cursor: 'pointer'
                   }}
                 >
-                  <span
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: '600',
-                      color: '#dc2626',
-                      textAlign: 'center'
-                    }}
-                  >
-                    Siblings
-                  </span>
                   <input
                     type="checkbox"
                     name="hasSC"
                     style={{
-                      width: '32px',
-                      height: '32px',
+                      width: '18px',
+                      height: '18px',
                       accentColor: '#dc2626'
                     }}
                     checked={heirs.hasSC}
                     onChange={handleChange}
                   />
+                  Siblings
                 </label>
               )}
+            </div>
           </div>
         </div>
 
         {/* Children Card */}
         <div style={cardStyle}>
           <Stepper label="Sons" name="sons" value={heirs.sons} />
-          <div style={{ borderTop: '1px solid #f1f5f9', margin: '4px 0' }} />
+          <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
           <Stepper label="Daughters" name="daughters" value={heirs.daughters} />
         </div>
 
-        {/* Results Card */}
-        <div style={{ ...cardStyle, padding: '0', overflow: 'hidden' }}>
+        {/* Results */}
+        <div
+          style={{
+            borderRadius: '12px',
+            overflow: 'hidden',
+            border: '0.5px solid #e2e8f0'
+          }}
+        >
           <div
             style={{
-              padding: '12px 16px',
-              backgroundColor: '#1e293b',
-              color: '#fff'
+              padding: '8px 14px',
+              backgroundColor: '#1e293b'
             }}
           >
             <span
               style={{
-                fontSize: '14px',
-                fontWeight: '600',
+                fontSize: '11px',
+                fontWeight: 500,
                 textTransform: 'uppercase',
-                letterSpacing: '0.05em'
+                letterSpacing: '0.05em',
+                color: '#fff'
               }}
             >
-              Distribution Shares
+              Distribution shares
             </span>
           </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                textAlign: 'center'
-              }}
-            >
-              <thead>
-                <tr
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '13px'
+            }}
+          >
+            <tbody>
+              {/* Total */}
+              <tr style={{ backgroundColor: '#f8fafc' }}>
+                <td
                   style={{
-                    backgroundColor: '#f1f5f9',
-                    borderBottom: '1px solid #e2e8f0'
+                    padding: '6px 8px',
+                    fontWeight: 500,
+                    color: '#0f172a'
                   }}
                 >
-                  <th
-                    style={{
-                      padding: '12px 8px',
-                      fontSize: '12px',
-                      color: '#64748b'
-                    }}
-                  >
-                    HEIR
-                  </th>
-                  <th
-                    style={{
-                      padding: '12px 8px',
-                      fontSize: '12px',
-                      color: '#64748b'
-                    }}
-                  >
-                    SHARE
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td
-                    style={{
-                      padding: '12px 8px',
-                      fontWeight: '600',
-                      color: '#0f172a'
-                    }}
-                  >
-                    Total Base
+                  Total base
+                </td>
+                <td
+                  style={{
+                    padding: '6px 8px',
+                    textAlign: 'right',
+                    fontWeight: 500,
+                    fontSize: '15px',
+                    color: '#2563eb'
+                  }}
+                >
+                  {res.total}
+                </td>
+              </tr>
+
+              {heirs.fatherAlive && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td style={{ padding: '6px 8px', color: '#475569' }}>
+                    Father
                   </td>
                   <td
                     style={{
-                      padding: '12px 8px',
-                      fontWeight: '800',
-                      fontSize: '18px',
-                      color: '#2563eb'
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500
                     }}
                   >
-                    {res.total}
+                    {res.father}
                   </td>
                 </tr>
-                {heirs.fatherAlive && (
-                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', color: '#475569' }}>
-                      Father
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: '700' }}>
-                      {res.father}
-                    </td>
-                  </tr>
-                )}
-                {heirs.motherAlive && (
-                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', color: '#475569' }}>
-                      Mother
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: '700' }}>
-                      {res.mother}
-                    </td>
-                  </tr>
-                )}
-                {heirs.husband && (
-                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', color: '#475569' }}>
-                      Husband
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: '700' }}>
-                      {res.husband}
-                    </td>
-                  </tr>
-                )}
-                {heirs.wives > 0 && (
-                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', color: '#475569' }}>
-                      Wife (each)
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: '700' }}>
-                      {res.wife}
-                    </td>
-                  </tr>
-                )}
-                {heirs.sons > 0 && (
-                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', color: '#475569' }}>
-                      Son (each)
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: '700' }}>
-                      {res.son}
-                    </td>
-                  </tr>
-                )}
-                {heirs.daughters > 0 && (
-                  <tr style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '12px 8px', color: '#475569' }}>
-                      Daughter (each)
-                    </td>
-                    <td style={{ padding: '12px 8px', fontWeight: '700' }}>
-                      {res.daughter}
-                    </td>
-                  </tr>
-                )}
-                {res.settle > 0 && (
-                  <tr>
-                    <td
-                      style={{
-                        padding: '12px 8px',
-                        color: '#1d4ed8',
-                        fontStyle: 'italic'
-                      }}
-                    >
-                      Musalahah
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px 8px',
-                        fontWeight: '700',
-                        color: '#1d4ed8'
-                      }}
-                    >
-                      {res.settle}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              )}
+              {heirs.motherAlive && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td style={{ padding: '6px 8px', color: '#475569' }}>
+                    Mother
+                  </td>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500
+                    }}
+                  >
+                    {res.mother}
+                  </td>
+                </tr>
+              )}
+              {heirs.husband && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td style={{ padding: '6px 8px', color: '#475569' }}>
+                    Husband
+                  </td>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500
+                    }}
+                  >
+                    {res.husband}
+                  </td>
+                </tr>
+              )}
+              {heirs.wives > 0 && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td style={{ padding: '6px 8px', color: '#475569' }}>
+                    Wife (each)
+                  </td>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500
+                    }}
+                  >
+                    {res.wife}
+                  </td>
+                </tr>
+              )}
+              {heirs.sons > 0 && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td style={{ padding: '6px 8px', color: '#475569' }}>
+                    Son (each)
+                  </td>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500
+                    }}
+                  >
+                    {res.son}
+                  </td>
+                </tr>
+              )}
+              {heirs.daughters > 0 && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td style={{ padding: '6px 8px', color: '#475569' }}>
+                    Daughter (each)
+                  </td>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500
+                    }}
+                  >
+                    {res.daughter}
+                  </td>
+                </tr>
+              )}
+              {res.settle > 0 && (
+                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      color: '#1d4ed8',
+                      fontStyle: 'italic'
+                    }}
+                  >
+                    Musalahah
+                  </td>
+                  <td
+                    style={{
+                      padding: '6px 8px',
+                      textAlign: 'right',
+                      fontWeight: 500,
+                      color: '#1d4ed8'
+                    }}
+                  >
+                    {res.settle}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
