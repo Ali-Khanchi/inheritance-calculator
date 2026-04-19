@@ -33,6 +33,7 @@ const InheritanceCalculator: React.FC = () => {
     sons: 2,
     daughters: 2
   });
+  const [showSummary, setShowSummary] = useState<boolean>(false);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -309,6 +310,51 @@ const InheritanceCalculator: React.FC = () => {
     </div>
   );
 
+  const DistributionRow = ({
+    label,
+    share
+  }: {
+    label: string;
+    share: number;
+  }) => (
+    <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
+      <td style={{ padding: '6px 8px', color: '#475569' }}>{label}</td>
+      <td
+        style={{
+          padding: '6px 8px',
+          textAlign: 'right',
+          fontWeight: 500
+        }}
+      >
+        {share}
+      </td>
+    </tr>
+  );
+
+  const wifeDistributionRows = showSummary ? (
+    <DistributionRow label={`Wife (each)`} share={res.wife} />
+  ) : (
+    Array.from({ length: heirs.wives }, (_, index) => (
+      <DistributionRow label={`Wife ${index + 1}`} share={res.wife} />
+    ))
+  );
+
+  const sonDistributionRows = showSummary ? (
+    <DistributionRow label={`Son (each)`} share={res.son} />
+  ) : (
+    Array.from({ length: heirs.sons }, (_, index) => (
+      <DistributionRow label={`Son ${index + 1}`} share={res.son} />
+    ))
+  );
+
+  const daughterDistributionRows = showSummary ? (
+    <DistributionRow label={`Daughter (each)`} share={res.daughter} />
+  ) : (
+    Array.from({ length: heirs.daughters }, (_, index) => (
+      <DistributionRow label={`Daughter ${index + 1}`} share={res.daughter} />
+    ))
+  );
+
   return (
     <div style={containerStyle}>
       <div style={innerWrapperStyle}>
@@ -405,6 +451,31 @@ const InheritanceCalculator: React.FC = () => {
           <div style={{ ...rowStyle }}>
             <span style={labelStyle}>Parents alive</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {showSiblings && (
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '13px',
+                    color: '#dc2626',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    name="hasSC"
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      accentColor: '#dc2626'
+                    }}
+                    checked={heirs.hasSC}
+                    onChange={handleChange}
+                  />
+                  Siblings
+                </label>
+              )}
               <label
                 style={{
                   display: 'flex',
@@ -451,31 +522,6 @@ const InheritanceCalculator: React.FC = () => {
                 />
                 Mother
               </label>
-              {showSiblings && (
-                <label
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    fontSize: '13px',
-                    color: '#dc2626',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    name="hasSC"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      accentColor: '#dc2626'
-                    }}
-                    checked={heirs.hasSC}
-                    onChange={handleChange}
-                  />
-                  Siblings
-                </label>
-              )}
             </div>
           </div>
         </div>
@@ -498,7 +544,10 @@ const InheritanceCalculator: React.FC = () => {
           <div
             style={{
               padding: '8px 14px',
-              backgroundColor: '#1e293b'
+              backgroundColor: '#1e293b',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
             }}
           >
             <span
@@ -512,6 +561,25 @@ const InheritanceCalculator: React.FC = () => {
             >
               Distribution shares
             </span>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                color: '#cbd5e1',
+                cursor: 'pointer',
+                userSelect: 'none'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={showSummary}
+                onChange={(e) => setShowSummary(e.target.checked)}
+                style={{ accentColor: '#2563eb' }}
+              />
+              Summary
+            </label>
           </div>
           <table
             style={{
@@ -521,149 +589,31 @@ const InheritanceCalculator: React.FC = () => {
             }}
           >
             <tbody>
-              {/* Total */}
-              <tr style={{ backgroundColor: '#f8fafc' }}>
-                <td
-                  style={{
-                    padding: '6px 8px',
-                    fontWeight: 700,
-                    color: '#0f172a'
-                  }}
-                >
-                  Total base
-                </td>
-                <td
-                  style={{
-                    padding: '6px 8px',
-                    textAlign: 'right',
-                    fontWeight: 800,
-                    fontSize: '18px',
-                    color: '#2563eb'
-                  }}
-                >
-                  {res.total}
-                </td>
-              </tr>
-
               {heirs.fatherAlive && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td style={{ padding: '6px 8px', color: '#475569' }}>
-                    Father
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500
-                    }}
-                  >
-                    {res.father}
-                  </td>
-                </tr>
+                <DistributionRow label={'Father'} share={res.father} />
               )}
               {heirs.motherAlive && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td style={{ padding: '6px 8px', color: '#475569' }}>
-                    Mother
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500
-                    }}
-                  >
-                    {res.mother}
-                  </td>
-                </tr>
+                <DistributionRow label={'Mother'} share={res.mother} />
               )}
               {heirs.husband && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td style={{ padding: '6px 8px', color: '#475569' }}>
-                    Husband
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500
-                    }}
-                  >
-                    {res.husband}
-                  </td>
-                </tr>
+                <DistributionRow label={'Husband'} share={res.husband} />
               )}
-              {heirs.wives > 0 && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td style={{ padding: '6px 8px', color: '#475569' }}>
-                    Wife (each)
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500
-                    }}
-                  >
-                    {res.wife}
-                  </td>
-                </tr>
-              )}
-              {heirs.sons > 0 && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td style={{ padding: '6px 8px', color: '#475569' }}>
-                    Son (each)
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500
-                    }}
-                  >
-                    {res.son}
-                  </td>
-                </tr>
-              )}
-              {heirs.daughters > 0 && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td style={{ padding: '6px 8px', color: '#475569' }}>
-                    Daughter (each)
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500
-                    }}
-                  >
-                    {res.daughter}
-                  </td>
-                </tr>
-              )}
+              {heirs.wives > 0 && wifeDistributionRows}
+              {heirs.sons > 0 && sonDistributionRows}
+              {heirs.daughters > 0 && daughterDistributionRows}
               {res.settle > 0 && (
-                <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      color: '#1d4ed8',
-                      fontStyle: 'italic'
-                    }}
-                  >
-                    Musalahah
-                  </td>
-                  <td
-                    style={{
-                      padding: '6px 8px',
-                      textAlign: 'right',
-                      fontWeight: 500,
-                      color: '#1d4ed8'
-                    }}
-                  >
-                    {res.settle}
-                  </td>
-                </tr>
+                <DistributionRow label={'Musalahah'} share={res.settle} />
               )}
+              <tr>
+                <td
+                  colSpan={2}
+                  style={{
+                    borderTop: '1px solid black',
+                    padding: '4px 0' // Optional: adds a little space around the line
+                  }}
+                />
+              </tr>
+              <DistributionRow label={'Total'} share={res.total} />
             </tbody>
           </table>
         </div>
