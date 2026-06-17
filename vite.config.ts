@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/inheritance-calculator/' // Replace 'your-repo-name' with your actual repository name
+  base: '/inheritance-calculator/'
 });
