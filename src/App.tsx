@@ -1,8 +1,11 @@
 import React, { useState, ChangeEvent } from 'react';
-import { calculate, HeirsState } from './util/calculation';
+import {
+  calculateFirstGroupInheritance,
+  FirstHeirsState
+} from './util/first-group-calculation';
 
 const InheritanceCalculator: React.FC = () => {
-  const [heirs, setHeirs] = useState<HeirsState>({
+  const [heirs, setHeirs] = useState<FirstHeirsState>({
     fatherAlive: true,
     motherAlive: true,
     hasSC: false,
@@ -22,14 +25,14 @@ const InheritanceCalculator: React.FC = () => {
     }));
   };
 
-  const updateCount = (name: keyof HeirsState, delta: number) => {
+  const updateCount = (name: keyof FirstHeirsState, delta: number) => {
     setHeirs((prev) => ({
       ...prev,
       [name]: Math.max(0, (prev[name] as number) + delta)
     }));
   };
 
-  const res = calculate(heirs);
+  const res = calculateFirstGroupInheritance(heirs);
 
   const showSiblings =
     heirs.fatherAlive &&
@@ -106,7 +109,7 @@ const InheritanceCalculator: React.FC = () => {
     value
   }: {
     label: string;
-    name: keyof HeirsState;
+    name: keyof FirstHeirsState;
     value: number;
   }) => (
     <div style={rowStyle}>
@@ -432,8 +435,8 @@ const InheritanceCalculator: React.FC = () => {
               {heirs.wives > 0 && wifeDistributionRows}
               {heirs.sons > 0 && sonDistributionRows}
               {heirs.daughters > 0 && daughterDistributionRows}
-              {res.settle > 0 && (
-                <DistributionRow label={'Musalahah'} share={res.settle} />
+              {res.settlement > 0 && (
+                <DistributionRow label={'Musalahah'} share={res.settlement} />
               )}
               <tr>
                 <td

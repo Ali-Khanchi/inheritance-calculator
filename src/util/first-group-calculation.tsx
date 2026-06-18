@@ -1,4 +1,4 @@
-export interface HeirsState {
+export interface FirstHeirsState {
   fatherAlive: boolean;
   motherAlive: boolean;
   hasSC: boolean;
@@ -9,7 +9,7 @@ export interface HeirsState {
   daughters: number;
 }
 
-export interface CalculationResult {
+export interface FirstHeirsShares {
   total: number;
   father: number;
   mother: number;
@@ -17,10 +17,12 @@ export interface CalculationResult {
   wife: number;
   son: number;
   daughter: number;
-  settle: number;
+  settlement: number;
 }
 
-export const calculate = (heirs: Partial<HeirsState>): CalculationResult => {
+export const calculateFirstGroupInheritance = (
+  heirs: Partial<FirstHeirsState>
+): FirstHeirsShares => {
   const {
     fatherAlive = false,
     motherAlive = false,
@@ -164,6 +166,6 @@ export const calculate = (heirs: Partial<HeirsState>): CalculationResult => {
     wife: result.wife / common,
     son: result.son / common,
     daughter: result.daughter / common,
-    settle: result.settle / common
+    settlement: result.settle / common
   };
 };
