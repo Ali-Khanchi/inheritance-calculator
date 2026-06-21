@@ -42,8 +42,15 @@ const CalculatorExamples: React.FC = () => {
                     { label: 'Mother', val: res.mother },
                     { label: 'Husband', val: res.husband },
                     { label: 'Wife (each)', val: res.wife },
-                    { label: 'Son (each)', val: res.son },
-                    { label: 'Daughter (each)', val: res.daughter },
+                    {
+                      label: 'Son (each)',
+                      val: (example.inputs.sons ?? 0 > 0) ? res.son : 0
+                    },
+                    {
+                      label: 'Daughter (each)',
+                      val:
+                        (example.inputs.daughters ?? 0 > 0) ? res.daughter : 0
+                    },
                     { label: 'Musalahah', val: res.settlement }
                   ].filter((s) => s.val > 0);
 
