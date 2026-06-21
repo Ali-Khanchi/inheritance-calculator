@@ -28,10 +28,34 @@
       property="og:image"
       content="https://ali-khanchi.github.io/inheritance-calculator/scale-icon.png"
     />
-    <script type="module" crossorigin src="/inheritance-calculator/assets/index-N8Ge4qza.js"></script>
+    <script type="module" crossorigin src="/inheritance-calculator/assets/index-DWzbD_n8.js"></script>
     <link rel="stylesheet" crossorigin href="/inheritance-calculator/assets/index-y4TlAv9n.css">
   </head>
   <body>
     <div id="root"></div>
+    <script type="text/javascript">
+      // This script checks if the URL has a redirected path parameter (?p=...)
+      // If it does, it uses browser history to cleanly rewrite the URL back to /examples
+      // right before React Router initializes.
+      (function (l) {
+        if (l.search[1] === 'p' && l.search[2] === '=') {
+          var decoded = l.search
+            .slice(3)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, l.pathname.lastIndexOf('/')) +
+              '/' +
+              decoded +
+              l.hash
+          );
+        }
+      })(window.location);
+    </script>
   </body>
 </html>
