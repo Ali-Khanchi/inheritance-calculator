@@ -4,7 +4,7 @@ import CalculatorExamples from './pages/CalculatorExamples';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 
 function NavigationBar() {
-  const { lang, setLang, t } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <nav
