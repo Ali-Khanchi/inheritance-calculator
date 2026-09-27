@@ -42,7 +42,7 @@ function NavigationBar() {
 export default function App() {
   return (
     <LanguageProvider>
-      <Router basename="/inheritance-calculator">
+      <Router basename="/">
         <NavigationBar />
         <main>
           <Routes>
