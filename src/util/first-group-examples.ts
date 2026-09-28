@@ -220,11 +220,11 @@ export const firstGroupExamples: StaticExample[] = [
     expected: { total: 36, mother: 6, son: 10, daughter: 5 }
   },
 
-  // --- Extra Complex Scenarios ---
+  // --- Extra Scenarios ---
   {
     title: 'One wife, one daughter, has siblings, both parents',
     category: 'First Group Inheritance',
-    subCategory: 'Extra Complex Scenarios',
+    subCategory: 'Extra Scenarios',
     inputs: {
       wives: 1,
       hasSC: true,
@@ -233,12 +233,50 @@ export const firstGroupExamples: StaticExample[] = [
       daughters: 1
     },
     expected: {
-      total: 240,
-      father: 42,
-      mother: 35,
-      wife: 30,
-      daughter: 126,
-      settlement: 7
+      total: 120,
+      father: 24,
+      mother: 20,
+      wife: 15,
+      daughter: 57,
+      settlement: 4
+    }
+  },
+  {
+    title: 'One wife, children, both parents',
+    category: 'First Group Inheritance',
+    subCategory: 'Extra Scenarios',
+    inputs: {
+      wives: 1,
+      fatherAlive: true,
+      motherAlive: true,
+      sons: 1,
+      daughters: 2
+    },
+    expected: {
+      total: 96,
+      father: 16,
+      mother: 16,
+      wife: 12,
+      daughter: 13,
+      son: 26
+    }
+  },
+  {
+    title: 'One wife, children, one parent',
+    category: 'First Group Inheritance',
+    subCategory: 'Extra Scenarios',
+    inputs: {
+      wives: 1,
+      motherAlive: true,
+      sons: 1,
+      daughters: 2
+    },
+    expected: {
+      total: 96,
+      mother: 16,
+      wife: 12,
+      daughter: 17,
+      son: 34
     }
   }
 ];

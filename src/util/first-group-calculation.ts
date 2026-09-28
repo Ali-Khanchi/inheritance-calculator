@@ -113,50 +113,72 @@ export const calculateFirstGroupInheritance = (
     weights.d = 1;
     weights.cDiv = ratioParts;
   } else {
-    if (fatherAlive) weights.f = 1;
-    else if (motherAlive) weights.m = 1;
-    else weights.settle = 1;
-    weights.total = 1;
+    // Determine remaining proportion weight after accounting for spouse fraction
+    const parentOrSettleWeight = spouseDenominator - spouseNumerator;
+
+    if (fatherAlive) weights.f = parentOrSettleWeight;
+    else if (motherAlive) weights.m = parentOrSettleWeight;
+    else weights.settle = parentOrSettleWeight;
+
+    weights.total = spouseDenominator;
   }
 
+  // 1. Calculate base LCD (L)
   const L = weights.total * spouseDenominator * (wives || 1) * weights.cDiv;
-  const remainderN = spouseDenominator - spouseNumerator;
-  const remainderD = spouseDenominator;
 
-  const getShare = (w: number, isChild = false) => {
-    const div = isChild
-      ? weights.total * remainderD * weights.cDiv
-      : weights.total * remainderD;
-    return Math.round((w * remainderN * L) / div);
-  };
+  // 2. Compute spouse total & individual share
+  const spouseTotal =
+    (deceasedIsMale && wives > 0) || (!deceasedIsMale && husband)
+      ? (spouseNumerator * L) / spouseDenominator
+      : 0;
+
+  const husbandShare = !deceasedIsMale && husband ? spouseTotal : 0;
+  const wifeShare = deceasedIsMale && wives > 0 ? spouseTotal / wives : 0;
+
+  // 3. Compute parent & settlement shares directly from total L
+  const fatherShare = Math.round((weights.f * L) / weights.total);
+  const motherShare = Math.round((weights.m * L) / weights.total);
+  const settleShare = Math.round((weights.settle * L) / weights.total);
+
+  // 4. Calculate residue for children after deducting spouse and parents
+  const totalAssigned = spouseTotal + fatherShare + motherShare + settleShare;
+  const childrenResidue = L - totalAssigned;
+
+  // 5. Distribute remaining residue to children based on ratioParts
+  const sonShare =
+    sons > 0 && ratioParts > 0
+      ? Math.round((childrenResidue * 2) / ratioParts)
+      : 0;
+  const daughterShare =
+    daughters > 0 && ratioParts > 0
+      ? Math.round((childrenResidue * 1) / ratioParts)
+      : 0;
 
   const result = {
     total: L,
-    father: getShare(weights.f),
-    mother: getShare(weights.m),
-    husband:
-      !deceasedIsMale && husband
-        ? (spouseNumerator * L) / spouseDenominator
-        : 0,
-    wife:
-      deceasedIsMale && wives > 0
-        ? (spouseNumerator * L) / (spouseDenominator * wives)
-        : 0,
-    son: getShare(weights.s, true),
-    daughter: getShare(weights.d, true),
-    settle: getShare(weights.settle)
+    father: fatherShare,
+    mother: motherShare,
+    husband: husbandShare,
+    wife: wifeShare,
+    son: sonShare,
+    daughter: daughterShare,
+    settle: settleShare
   };
 
+  // 6. Simplify by Greatest Common Divisor (GCD)
   const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
-  let allVals = [result.total, result.settle];
-  if (fatherAlive) allVals.push(result.father);
-  if (motherAlive) allVals.push(result.mother);
-  if (husband) allVals.push(result.husband);
-  if (wives > 0) allVals.push(result.wife);
-  if (sons > 0) allVals.push(result.son);
-  if (daughters > 0) allVals.push(result.daughter);
-  allVals = allVals.filter((v) => v > 0);
-  const common = allVals.reduce((a, b) => gcd(a, b), allVals[0]);
+  let allVals = [
+    result.total,
+    result.father,
+    result.mother,
+    result.husband,
+    result.wife,
+    result.son,
+    result.daughter,
+    result.settle
+  ].filter((v) => v > 0);
+
+  const common = allVals.length > 0 ? allVals.reduce((a, b) => gcd(a, b)) : 1;
 
   return {
     total: result.total / common,
