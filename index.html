@@ -32,9 +32,6 @@
   <body>
     <div id="root"></div>
     <script type="text/javascript">
-      // This script checks if the URL has a redirected path parameter (?p=...)
-      // If it does, it uses browser history to cleanly rewrite the URL back to /examples
-      // right before React Router initializes.
       (function (l) {
         if (l.search[1] === 'p' && l.search[2] === '=') {
           var decoded = l.search
@@ -44,13 +41,13 @@
               return s.replace(/~and~/g, '&');
             })
             .join('?');
+
+          // Cleanly replace URL to root + decoded route + hash
+          var newUrl = '/' + decoded + l.hash;
           window.history.replaceState(
             null,
             null,
-            l.pathname.slice(0, l.pathname.lastIndexOf('/')) +
-              '/' +
-              decoded +
-              l.hash
+            newUrl.replace(/\/{2,}/g, '/')
           );
         }
       })(window.location);

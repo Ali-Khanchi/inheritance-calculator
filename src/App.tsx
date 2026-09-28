@@ -7,34 +7,21 @@ function NavigationBar() {
   const { t } = useLanguage();
 
   return (
-    <nav
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px 20px',
-        background: '#f4f4f4'
-      }}
-    >
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <Link to="/">{t('Home')}</Link>
-        <Link to="/examples">{t('Examples')}</Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between bg-neutral-100 px-5 py-2.5 shadow-sm h-12">
+      <div className="flex gap-4">
+        <Link
+          to="/"
+          className="text-gray-700 hover:text-black transition-colors"
+        >
+          {t('Home')}
+        </Link>
+        <Link
+          to="/examples"
+          className="text-gray-700 hover:text-black transition-colors"
+        >
+          {t('Examples')}
+        </Link>
       </div>
-
-      {/* <button
-        onClick={() => setLang(lang === 'en' ? 'ar' : 'en')}
-        style={{
-          padding: '6px 12px',
-          cursor: 'pointer',
-          borderRadius: '6px',
-          border: '1px solid #cbd5e1',
-          background: '#fff',
-          fontWeight: '600',
-          fontSize: '14px'
-        }}
-      >
-        {lang === 'en' ? 'العربية' : 'English'}
-      </button> */}
     </nav>
   );
 }
@@ -43,13 +30,15 @@ export default function App() {
   return (
     <LanguageProvider>
       <Router basename="/">
-        <NavigationBar />
-        <main>
-          <Routes>
-            <Route path="/" element={<InheritanceCalculator />} />
-            <Route path="/examples" element={<CalculatorExamples />} />
-          </Routes>
-        </main>
+        <div className="min-h-screen">
+          <NavigationBar />
+          <main className="pt-12">
+            <Routes>
+              <Route path="/" element={<InheritanceCalculator />} />
+              <Route path="/examples" element={<CalculatorExamples />} />
+            </Routes>
+          </main>
+        </div>
       </Router>
     </LanguageProvider>
   );
