@@ -7,6 +7,19 @@ import {
   calculateSecondGroupInheritance,
   SecondHeirsState
 } from '../util/second-group-calculation';
+import InheritanceGraph from '../components/InheritanceGraph';
+
+const cardStyle =
+  'bg-white px-3.5 py-2.5 rounded-xl mb-2 shadow-[0_1px_4px_rgba(0,0,0,0.05)] border-[0.5px] border-[#e2e8f0]';
+const dividerStyle = 'border-t-[0.5px] border-[#f1f5f9]';
+const stepperBtnStyle =
+  'w-8 h-8 text-[18px] bg-[#f1f5f9] border-[0.5px] border-[#cbd5e1] rounded-lg flex items-center justify-center cursor-pointer touch-none select-none leading-none';
+const labelStyle = 'text-[16px] text-[#334155] font-medium';
+const checkboxStyle = 'w-6 h-6 accent-[#2563eb]';
+const tabBaseStyle =
+  'flex-1 py-2 px-1 rounded-lg font-medium text-[16px] cursor-pointer';
+const tabActiveStyle = `${tabBaseStyle} border-[1.5px] border-[#2563eb] bg-[#eff6ff] text-[#1d4ed8]`;
+const tabInactiveStyle = `${tabBaseStyle} border-[0.5px] border-[#e2e8f0] bg-white text-[#64748b]`;
 
 const InheritanceCalculator: React.FC = () => {
   const [heirs, setHeirs] = useState<FirstHeirsState>({
@@ -37,6 +50,7 @@ const InheritanceCalculator: React.FC = () => {
   });
 
   const [showSummary, setShowSummary] = useState<boolean>(false);
+  const [showGraph, setShowGraph] = useState<boolean>(false);
   const [activeGroup, setActiveGroup] = useState<'first' | 'second'>('first');
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +61,6 @@ const InheritanceCalculator: React.FC = () => {
     if (activeGroup === 'first') {
       setHeirs((prev) => ({ ...prev, [name]: targetValue }));
     } else {
-      // Maps the 'husband' checkbox target safely to the alternative key signature
       const targetName = name === 'husband' ? 'hasHusband' : name;
       setSecondHeirs((prev) => ({ ...prev, [targetName]: targetValue }));
     }
@@ -82,80 +95,6 @@ const InheritanceCalculator: React.FC = () => {
     heirs.sons === 0 &&
     heirs.daughters <= 1;
 
-  // --- STYLES ---
-
-  const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    minHeight: '100vh',
-    margin: '0 auto',
-    padding: '10px 12px',
-    boxSizing: 'border-box',
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    backgroundColor: '#f8fafc',
-    alignItems: 'center'
-  };
-
-  const innerWrapperStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '420px',
-    position: 'relative' // Added to anchor the absolute positioned button
-  };
-
-  const cardStyle: React.CSSProperties = {
-    background: '#ffffff',
-    padding: '10px 14px',
-    borderRadius: '12px',
-    marginBottom: '8px',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-    border: '0.5px solid #e2e8f0'
-  };
-
-  const btnStyle: React.CSSProperties = {
-    width: '32px',
-    height: '32px',
-    fontSize: '18px',
-    backgroundColor: '#f1f5f9',
-    border: '0.5px solid #cbd5e1',
-    borderRadius: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    cursor: 'pointer',
-    touchAction: 'manipulation',
-    userSelect: 'none',
-    lineHeight: 1
-  };
-
-  const rowStyle: React.CSSProperties = {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '5px 0'
-  };
-
-  const rowDividerStyle: React.CSSProperties = {
-    borderTop: '0.5px solid #f1f5f9'
-  };
-
-  const stickyHeaderStyle: React.CSSProperties = {
-    position: 'sticky',
-    top: 0,
-    backgroundColor: '#f8fafc', // Matches containerStyle background to hide scrolling content
-    paddingTop: '10px',
-    paddingBottom: '10px',
-    zIndex: 10,
-    width: '100%'
-  };
-
-  const labelStyle: React.CSSProperties = {
-    fontSize: '16px',
-    color: '#334155',
-    fontWeight: 500
-  };
-
   const Stepper = ({
     label,
     name,
@@ -165,29 +104,21 @@ const InheritanceCalculator: React.FC = () => {
     name: string;
     value: number;
   }) => (
-    <div style={rowStyle}>
-      <span style={labelStyle}>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div className="flex justify-between items-center py-1.25">
+      <span className={labelStyle}>{label}</span>
+      <div className="flex items-center gap-2">
         <button
-          style={btnStyle}
+          className={stepperBtnStyle}
           onClick={() => updateCount(name, -1)}
           aria-label="decrease"
         >
           −
         </button>
-        <span
-          style={{
-            minWidth: '24px',
-            textAlign: 'center',
-            fontSize: '15px',
-            fontWeight: 500,
-            color: '#1e293b'
-          }}
-        >
+        <span className="min-w-6 text-center text-[15px] font-medium text-[#1e293b]">
           {value}
         </span>
         <button
-          style={btnStyle}
+          className={stepperBtnStyle}
           onClick={() => updateCount(name, 1)}
           aria-label="increase"
         >
@@ -204,17 +135,9 @@ const InheritanceCalculator: React.FC = () => {
     label: string;
     share: number;
   }) => (
-    <tr style={{ borderTop: '0.5px solid #f1f5f9' }}>
-      <td style={{ padding: '6px 8px', color: '#475569' }}>{label}</td>
-      <td
-        style={{
-          padding: '6px 8px',
-          textAlign: 'right',
-          fontWeight: 500
-        }}
-      >
-        {share}
-      </td>
+    <tr className={`border-t-[0.5px] border-[#f1f5f9]`}>
+      <td className="py-1.5 px-2 text-[#475569]">{label}</td>
+      <td className="py-1.5 px-2 text-right font-medium">{share}</td>
     </tr>
   );
 
@@ -227,18 +150,14 @@ const InheritanceCalculator: React.FC = () => {
     name: string;
     state: boolean;
   }) => (
-    <div style={rowStyle}>
-      <span style={labelStyle}>{label}</span>
+    <div className="flex justify-between items-center py-1.25">
+      <span className={labelStyle}>{label}</span>
       <input
         type="checkbox"
         name={name}
         checked={state}
         onChange={handleChange}
-        style={{
-          width: '24px',
-          height: '24px',
-          accentColor: '#2563eb'
-        }}
+        className={checkboxStyle}
       />
     </div>
   );
@@ -275,101 +194,47 @@ const InheritanceCalculator: React.FC = () => {
   };
 
   return (
-    <div style={containerStyle}>
-      <div style={innerWrapperStyle}>
-        <div style={stickyHeaderStyle}>
+    <div className="flex flex-col w-full min-h-screen mx-auto p-[10px_12px] box-border bg-[#f8fafc] items-center font-sans">
+      <div className="w-full max-w-105 relative">
+        <div className="sticky top-0 bg-[#f8fafc] py-2.5 w-full">
           <button
             onClick={handleClear}
-            style={{
-              position: 'absolute',
-              top: '4px',
-              right: '4px',
-              background: 'none',
-              border: 'none',
-              color: '#64748b',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              // padding: '4px 8px',
-              height: '80%',
-              borderRadius: '6px',
-              backgroundColor: '#f1f5f9'
-            }}
+            className="absolute top-1 right-1 bg-none border-none text-[#64748b] text-[14px] font-medium cursor-pointer h-[80%] rounded-md bg-[#f1f5f9]"
           >
             Clear
           </button>
           {/* Header */}
-          <header style={{ textAlign: 'center', marginBottom: '10px' }}>
-            <h3
-              style={{
-                margin: '0',
-                fontSize: '20px',
-                fontWeight: 700,
-                color: '#0f172a'
-              }}
-            >
+          <header className="text-center mb-2.5">
+            <h3 className="m-0 text-[20px] font-bold text-[#0f172a]">
               Inheritance calculator
             </h3>
-            <p
-              style={{ margin: '2px 0 0', fontSize: '18px', color: '#64748b' }}
-            >
+            <p className="m-[2px_0_0] text-[18px] text-[#64748b]">
               Islamic estate distribution
             </p>
           </header>
         </div>
-
         {/* Group Selector Button Block */}
-        <div
-          style={{
-            ...cardStyle,
-            display: 'flex',
-            gap: '6px',
-            marginBottom: '8px'
-          }}
-        >
+        <div className={`${cardStyle} flex gap-1.5`}>
           <button
             onClick={() => setActiveGroup('first')}
-            style={{
-              flex: 1,
-              padding: '8px 4px',
-              borderRadius: '8px',
-              border:
-                activeGroup === 'first'
-                  ? '1.5px solid #2563eb'
-                  : '0.5px solid #e2e8f0',
-              backgroundColor: activeGroup === 'first' ? '#eff6ff' : '#fff',
-              color: activeGroup === 'first' ? '#1d4ed8' : '#64748b',
-              fontWeight: 500,
-              fontSize: '16px',
-              cursor: 'pointer'
-            }}
+            className={
+              activeGroup === 'first' ? tabActiveStyle : tabInactiveStyle
+            }
           >
             First Group
           </button>
           <button
             onClick={() => setActiveGroup('second')}
-            style={{
-              flex: 1,
-              padding: '8px 4px',
-              borderRadius: '8px',
-              border:
-                activeGroup === 'second'
-                  ? '1.5px solid #2563eb'
-                  : '0.5px solid #e2e8f0',
-              backgroundColor: activeGroup === 'second' ? '#eff6ff' : '#fff',
-              color: activeGroup === 'second' ? '#1d4ed8' : '#64748b',
-              fontWeight: 500,
-              fontSize: '16px',
-              cursor: 'pointer'
-            }}
+            className={
+              activeGroup === 'second' ? tabActiveStyle : tabInactiveStyle
+            }
           >
             Second Group
           </button>
         </div>
-
         {/* Gender / Spouse Card */}
-        <div style={cardStyle}>
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+        <div className={cardStyle}>
+          <div className="flex gap-1.5 mb-2.5">
             <button
               onClick={() => {
                 setHeirs({ ...heirs, deceasedIsMale: true, husband: false });
@@ -379,19 +244,9 @@ const InheritanceCalculator: React.FC = () => {
                   hasHusband: false
                 });
               }}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                borderRadius: '8px',
-                border: heirs.deceasedIsMale
-                  ? '1.5px solid #2563eb'
-                  : '0.5px solid #e2e8f0',
-                backgroundColor: heirs.deceasedIsMale ? '#eff6ff' : '#fff',
-                color: heirs.deceasedIsMale ? '#1d4ed8' : '#64748b',
-                fontWeight: 500,
-                fontSize: '16px',
-                cursor: 'pointer'
-              }}
+              className={
+                heirs.deceasedIsMale ? tabActiveStyle : tabInactiveStyle
+              }
             >
               Male deceased
             </button>
@@ -404,25 +259,15 @@ const InheritanceCalculator: React.FC = () => {
                   wives: 0
                 });
               }}
-              style={{
-                flex: 1,
-                padding: '8px 4px',
-                borderRadius: '8px',
-                border: !heirs.deceasedIsMale
-                  ? '1.5px solid #2563eb'
-                  : '0.5px solid #e2e8f0',
-                backgroundColor: !heirs.deceasedIsMale ? '#eff6ff' : '#fff',
-                color: !heirs.deceasedIsMale ? '#1d4ed8' : '#64748b',
-                fontWeight: 500,
-                fontSize: '16px',
-                cursor: 'pointer'
-              }}
+              className={
+                !heirs.deceasedIsMale ? tabActiveStyle : tabInactiveStyle
+              }
             >
               Female deceased
             </button>
           </div>
 
-          <div style={{ borderTop: '0.5px solid #f1f5f9', paddingTop: '2px' }}>
+          <div className={`pt-0.5 ${dividerStyle}`}>
             {heirs.deceasedIsMale ? (
               <Stepper
                 label="Wives"
@@ -432,19 +277,13 @@ const InheritanceCalculator: React.FC = () => {
                 }
               />
             ) : (
-              <div style={rowStyle}>
-                <span style={labelStyle}>Husband</span>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                >
+              <div className="flex justify-between items-center py-1.25">
+                <span className={labelStyle}>Husband</span>
+                <div className="flex items-center gap-1.5">
                   <input
                     type="checkbox"
                     name="husband"
-                    style={{
-                      width: '24px',
-                      height: '24px',
-                      accentColor: '#2563eb'
-                    }}
+                    className={checkboxStyle}
                     checked={
                       activeGroup === 'first'
                         ? heirs.husband
@@ -457,82 +296,40 @@ const InheritanceCalculator: React.FC = () => {
             )}
           </div>
         </div>
-
         {/* Parents Card */}
         {activeGroup === 'first' && (
           <>
-            <div style={cardStyle}>
-              <div style={{ ...rowStyle }}>
-                <span style={labelStyle}>Parents alive</span>
-                <div
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px' }}
-                >
+            <div className={cardStyle}>
+              <div className="flex justify-between items-center py-1.25">
+                <span className={labelStyle}>Parents alive</span>
+                <div className="flex items-center gap-3">
                   {showSiblings && (
-                    <label
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        fontSize: '13px',
-                        color: '#dc2626',
-                        cursor: 'pointer'
-                      }}
-                    >
+                    <label className="flex items-center gap-1.25 text-[13px] text-[#dc2626] cursor-pointer">
                       <input
                         type="checkbox"
                         name="hasSC"
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          accentColor: '#dc2626'
-                        }}
+                        className="w-6 h-6 accent-[#dc2626]"
                         checked={heirs.hasSC}
                         onChange={handleChange}
                       />
                       Siblings
                     </label>
                   )}
-                  <label
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      fontSize: '13px',
-                      color: '#475569',
-                      cursor: 'pointer'
-                    }}
-                  >
+                  <label className="flex items-center gap-1.25 text-[13px] text-[#475569] cursor-pointer">
                     <input
                       type="checkbox"
                       name="fatherAlive"
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        accentColor: '#2563eb'
-                      }}
+                      className={checkboxStyle}
                       checked={heirs.fatherAlive}
                       onChange={handleChange}
                     />
                     Father
                   </label>
-                  <label
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                      fontSize: '13px',
-                      color: '#475569',
-                      cursor: 'pointer'
-                    }}
-                  >
+                  <label className="flex items-center gap-1.25 text-[13px] text-[#475569] cursor-pointer">
                     <input
                       type="checkbox"
                       name="motherAlive"
-                      style={{
-                        width: '24px',
-                        height: '24px',
-                        accentColor: '#2563eb'
-                      }}
+                      className={checkboxStyle}
                       checked={heirs.motherAlive}
                       onChange={handleChange}
                     />
@@ -543,9 +340,9 @@ const InheritanceCalculator: React.FC = () => {
             </div>
 
             {/* Children Card */}
-            <div style={cardStyle}>
+            <div className={cardStyle}>
               <Stepper label="Sons" name="sons" value={heirs.sons} />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Stepper
                 label="Daughters"
                 name="daughters"
@@ -554,42 +351,41 @@ const InheritanceCalculator: React.FC = () => {
             </div>
           </>
         )}
-
         {/* Second Group Input Configuration Panels */}
         {activeGroup === 'second' && (
           <>
             {/* Siblings Panel */}
-            <div style={cardStyle}>
+            <div className={cardStyle}>
               <Stepper
                 label="Full Brothers"
                 name="fullBrothers"
                 value={secondHeirs.fullBrothers}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Stepper
                 label="Full Sisters"
                 name="fullSisters"
                 value={secondHeirs.fullSisters}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Stepper
                 label="Paternal Brothers"
                 name="paternalBrothers"
                 value={secondHeirs.paternalBrothers}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Stepper
                 label="Paternal Sisters"
                 name="paternalSisters"
                 value={secondHeirs.paternalSisters}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Stepper
                 label="Maternal Brothers"
                 name="maternalBrothers"
                 value={secondHeirs.maternalBrothers}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Stepper
                 label="Maternal Sisters"
                 name="maternalSisters"
@@ -598,25 +394,25 @@ const InheritanceCalculator: React.FC = () => {
             </div>
 
             {/* Grandparents Panel */}
-            <div style={cardStyle}>
+            <div className={cardStyle}>
               <Checkbox
                 label={'Paternal Grandpa'}
                 name="paternalGrandpa"
                 state={secondHeirs.paternalGrandpa}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Checkbox
                 label={'Paternal Grandma'}
                 name="paternalGrandma"
                 state={secondHeirs.paternalGrandma}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Checkbox
                 label={'Maternal Grandpa'}
                 name="maternalGrandpa"
                 state={secondHeirs.maternalGrandpa}
               />
-              <div style={{ ...rowDividerStyle, margin: '2px 0' }} />
+              <div className={`my-0.5 ${dividerStyle}`} />
               <Checkbox
                 label={'Maternal Grandma'}
                 name="maternalGrandma"
@@ -625,62 +421,23 @@ const InheritanceCalculator: React.FC = () => {
             </div>
           </>
         )}
-
         {/* Results */}
-        <div
-          style={{
-            borderRadius: '12px',
-            overflow: 'hidden',
-            border: '0.5px solid #e2e8f0'
-          }}
-        >
-          <div
-            style={{
-              padding: '8px 14px',
-              backgroundColor: '#1e293b',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <span
-              style={{
-                fontSize: '13px',
-                fontWeight: 500,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                color: '#fff'
-              }}
-            >
+        <div className="rounded-xl overflow-hidden border-[0.5px] border-[#e2e8f0]">
+          <div className="py-2 px-3.5 bg-[#1e293b] flex justify-between items-center">
+            <span className="text-[13px] font-medium uppercase tracking-wider text-white">
               Distribution shares
             </span>
-            <label
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '12px',
-                color: '#cbd5e1',
-                cursor: 'pointer',
-                userSelect: 'none'
-              }}
-            >
+            <label className="flex items-center gap-1.5 text-[12px] text-[#cbd5e1] cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={showSummary}
                 onChange={(e) => setShowSummary(e.target.checked)}
-                style={{ accentColor: '#2563eb' }}
+                className="accent-[#2563eb]"
               />
               Summary
             </label>
           </div>
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: '16px'
-            }}
-          >
+          <table className="w-full border-collapse text-[16px]">
             <tbody>
               {activeGroup === 'first' ? (
                 <>
@@ -748,10 +505,7 @@ const InheritanceCalculator: React.FC = () => {
                     />
                   )}
                   <tr>
-                    <td
-                      colSpan={2}
-                      style={{ borderTop: '1px solid black', padding: '4px 0' }}
-                    />
+                    <td colSpan={2} className="border-t border-black py-1" />
                   </tr>
                   <DistributionRow label={'Total'} share={firstRes.total} />
                 </>
@@ -917,10 +671,7 @@ const InheritanceCalculator: React.FC = () => {
                     />
                   )}
                   <tr>
-                    <td
-                      colSpan={2}
-                      style={{ borderTop: '1px solid black', padding: '4px 0' }}
-                    />
+                    <td colSpan={2} className="border-t border-black py-1" />
                   </tr>
                   <DistributionRow label="Total" share={secondRes.total} />
                 </>
@@ -928,6 +679,23 @@ const InheritanceCalculator: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {/* visualisation */}
+        <button
+          onClick={() => setShowGraph((v) => !v)}
+          className="mt-2 w-full rounded-xl bg-[#2563eb] py-2.5 text-[15px] font-semibold tracking-wider text-white"
+        >
+          {showGraph ? 'HIDE' : 'VISUALIZE'}
+        </button>
+        {showGraph && (
+          <InheritanceGraph
+            group={activeGroup}
+            first={heirs}
+            second={secondHeirs}
+            shares={
+              activeGroup === 'first' ? { ...firstRes } : { ...secondRes }
+            }
+          />
+        )}
       </div>
     </div>
   );

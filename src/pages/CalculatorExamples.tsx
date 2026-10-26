@@ -22,7 +22,7 @@ const CalculatorExamples: React.FC = () => {
       {/* Sidebar Toggle Button for Mobile - Changed right-4 to end-4 */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="fixed bottom-4 end-4 z-50 md:hidden flex items-center justify-center w-12 h-12 bg-slate-900 text-white rounded-full shadow-lg hover:bg-slate-800 transition"
+        className="fixed bottom-4 inset-e-4 z-50 md:hidden flex items-center justify-center w-12 h-12 bg-slate-900 text-white rounded-full shadow-lg hover:bg-slate-800 transition"
         aria-label="Toggle Navigation Menu"
       >
         {isSidebarOpen ? '✕' : '☰'}
@@ -30,7 +30,7 @@ const CalculatorExamples: React.FC = () => {
 
       {/* Sidebar Navigation - Changed left-0 to start-0, border-r to border-e, and handled conditional RTL translation direction */}
       <aside
-        className={`fixed top-0 start-0 z-40 w-64 h-screen bg-white border-e border-slate-200 p-5 transition-transform duration-300 md:translate-x-0 md:sticky ${
+        className={`fixed top-0 inset-s-0 z-40 w-64 h-screen bg-white border-e border-slate-200 p-5 transition-transform duration-300 md:translate-x-0 md:sticky ${
           isSidebarOpen
             ? 'translate-x-0'
             : isRtl
