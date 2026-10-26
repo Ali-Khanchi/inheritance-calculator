@@ -683,6 +683,7 @@ const InheritanceCalculator: React.FC = () => {
         <button
           onClick={() => setShowGraph((v) => !v)}
           className="mt-2 w-full rounded-xl bg-[#2563eb] py-2.5 text-[15px] font-semibold tracking-wider text-white"
+          hidden={showGraph}
         >
           {showGraph ? 'HIDE' : 'VISUALIZE'}
         </button>
@@ -694,6 +695,7 @@ const InheritanceCalculator: React.FC = () => {
             shares={
               activeGroup === 'first' ? { ...firstRes } : { ...secondRes }
             }
+            hideGraph={setShowGraph.bind(null, false)}
           />
         )}
       </div>

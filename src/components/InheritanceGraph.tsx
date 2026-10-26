@@ -73,6 +73,7 @@ export interface GraphInput {
   first: FirstHeirsState;
   second: SecondHeirsState;
   shares: Shares;
+  hideGraph: () => void;
 }
 
 /* ----------------------------- Types ------------------------------ */
@@ -720,13 +721,29 @@ function InheritanceGraphInner(props: GraphInput) {
       ref={wrapperRef}
       className="relative left-1/2 mt-2 w-screen -translate-x-1/2 overflow-hidden border-y border-[#e2e8f0] bg-white"
     >
-      <div className="flex items-center justify-end border-b border-[#e2e8f0] px-3 py-1.5">
-        <button
-          onClick={resetLayout}
-          className="rounded-md bg-[#f1f5f9] px-3 py-1 text-[13px] font-medium text-[#475569]"
-        >
-          Reset layout
-        </button>
+      <div className="flex items-center justify-center border-b border-[#e2e8f0] px-3 py-2">
+        <div className="flex w-full max-w-105 items-center justify-center gap-2">
+          <button
+            onClick={() => window.scrollBy({ top: -600, behavior: 'smooth' })}
+            className="flex items-center justify-center rounded-md bg-[#f1f5f9] px-3 py-1.5 text-[13px] font-medium text-[#475569]"
+            title="Scroll up"
+          >
+            ↑
+          </button>
+          <button
+            onClick={props.hideGraph}
+            className="flex-1 rounded-xl bg-[#2563eb] py-2 text-[15px] font-semibold tracking-wider text-white"
+          >
+            HIDE
+          </button>
+          <button
+            onClick={resetLayout}
+            className="flex items-center justify-center rounded-md bg-[#f1f5f9] px-3 py-1.5 text-[13px] font-medium text-[#475569]"
+            title="Reset layout"
+          >
+            ↺
+          </button>
+        </div>
       </div>
       <div className="h-[70vh] min-h-120 w-full">
         <ReactFlow
