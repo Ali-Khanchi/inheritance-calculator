@@ -1,4 +1,4 @@
-import { useEffect, Fragment, type CSSProperties, useRef } from 'react';
+import { useEffect, Fragment, type CSSProperties } from 'react';
 import {
   ReactFlow,
   Background,
@@ -9,7 +9,9 @@ import {
   useNodesState,
   type Edge,
   type Node,
-  type NodeProps
+  type NodeProps,
+  ReactFlowProvider,
+  useReactFlow
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { FirstHeirsState } from '../util/first-group-calculation';
@@ -44,16 +46,15 @@ const NODE_H = 60;
 const FORK_W = 110;
 const FORK_H = 28;
 const ROW_GAP = 170; // horizontal spacing for items in a row
-const STACK_GAP = 80; // vertical spacing for stacked spouses
 
 // Node centres
 const POS = {
   spouseX: -270,
   spouseForkX: -135,
-  fatherX: -240,
-  motherX: 240,
+  fatherX: -200,
+  motherX: 200,
   parentsY: -200,
-  grandparentsY: -380,
+  grandparentsY: -80,
   grandForkY: -290,
   forkY: 110,
   rowY: 230
@@ -91,7 +92,7 @@ interface Person {
 
 interface PersonData extends Record<string, unknown> {
   label: string;
-  share?: number;
+  share?: number | string;
   pct?: number;
   color: string;
   variant: Variant;
@@ -167,7 +168,7 @@ const grandparents = (
       share: i.share,
       color: COLORS.grandparent,
       variant: 'heir',
-      x: parentX + rowX(idx, shown.length, 160),
+      x: parentX + 200 * Math.sign(parentX) + rowX(idx, shown.length, 160),
       y: POS.grandparentsY
     })
   );
@@ -265,7 +266,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
   });
 
   /* Family counts (second group only) */
-  const fullCount = isFirst ? 0 : s.fullBrothers + s.fullSisters;
+  //   const fullCount = isFirst ? 0 : s.fullBrothers + s.fullSisters;
   const patCount = isFirst ? 0 : s.paternalBrothers + s.paternalSisters;
   const matCount = isFirst ? 0 : s.maternalBrothers + s.maternalSisters;
   const patGrand = !isFirst && (s.paternalGrandpa || s.paternalGrandma);
@@ -275,17 +276,18 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
      In group 2 a parent is drawn as a placeholder when they are needed to
      link siblings or grandparents, even if they are not alive. */
   const showFather =
-    first.fatherAlive || fullCount + patCount > 0 || !!patGrand;
-  const showMother =
-    first.motherAlive || fullCount + matCount > 0 || !!matGrand;
+    (isFirst && first.fatherAlive) || patCount > 0 || !!patGrand;
 
-  const fatherPos = { x: -260, y: 0 }; // left of deceased
-  const motherPos = { x: 260, y: 0 }; // right of deceased
+  const showMother =
+    (isFirst && first.motherAlive) || matCount > 0 || !!matGrand;
+
+  const fatherPos = { x: POS.fatherX, y: 0 }; // left of deceased
+  const motherPos = { x: POS.motherX, y: 0 }; // right of deceased
 
   const father: Person | null = showFather
     ? {
         id: 'father',
-        label: 'Father',
+        label: isFirst ? 'Father' : 'Paternal Side',
         share: isFirst ? shares.father : undefined,
         color: COLORS.parent,
         variant: isFirst ? 'heir' : 'relative',
@@ -297,7 +299,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
   const mother: Person | null = showMother
     ? {
         id: 'mother',
-        label: 'Mother',
+        label: isFirst ? 'Mother' : 'Maternal Side',
         share: isFirst ? shares.mother : undefined,
         color: COLORS.parent,
         variant: isFirst ? 'heir' : 'relative',
@@ -454,7 +456,12 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
       id: 'deceased',
       type: 'person',
       position: topLeft(0, 0, NODE_W, NODE_H),
-      data: { label: 'Deceased', color: COLORS.deceased, variant: 'deceased' }
+      data: {
+        label: 'Deceased',
+        color: COLORS.deceased,
+        variant: 'deceased',
+        share: round(total) + ' Shares'
+      }
     },
     ...people.map(personNode)
   ];
@@ -466,7 +473,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
     fans.push({
       members: spouses,
       color: COLORS.spouse,
-      fork: { x: 0, y: -110 },
+      fork: { x: 0, y: -75 },
       forkToMembers: 'bottom',
       memberSide: 'top',
       trunk: { from: 'bottom', to: 'deceased', toSide: 'top' }
@@ -479,7 +486,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
       fans.push({
         members: children,
         color: COLORS.lineage, // neutral fork colour; members keep their own colour
-        fork: { x: avgX(children), y: POS.forkY },
+        fork: { x: avgX(children), y: 50 },
         forkToMembers: 'bottom',
         memberSide: 'top',
         trunk: { from: 'top', to: 'deceased', toSide: 'bottom' }
@@ -490,7 +497,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
       fans.push({
         members: patGP,
         color: COLORS.grandparent,
-        fork: { x: POS.fatherX, y: POS.grandForkY },
+        fork: { x: POS.fatherX - 200, y: fatherPos.y - 2 },
         forkToMembers: 'top',
         memberSide: 'bottom',
         trunk: { from: 'bottom', to: 'father', toSide: 'top' }
@@ -499,7 +506,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
       fans.push({
         members: matGP,
         color: COLORS.grandparent,
-        fork: { x: POS.motherX, y: POS.grandForkY },
+        fork: { x: POS.motherX + 200, y: motherPos.y - 2 },
         forkToMembers: 'top',
         memberSide: 'bottom',
         trunk: { from: 'bottom', to: 'mother', toSide: 'top' }
@@ -624,7 +631,9 @@ function PersonNode({ data }: NodeProps<Node<PersonData, 'person'>>) {
       {share !== undefined && (
         <div className="mt-0.5 text-[13px]">
           <span className="font-bold">{share}</span>{' '}
-          <span className="opacity-70">({pct?.toFixed(1)}%)</span>
+          <span className="opacity-70">
+            {pct ? `(${pct.toFixed(1)}%)` : ''}
+          </span>
         </div>
       )}
     </div>
@@ -637,7 +646,9 @@ function ForkNode({ data }: NodeProps<Node<ForkData, 'fork'>>) {
       style={{ width: FORK_W, height: FORK_H, borderColor: data.color }}
       className="flex items-center justify-center rounded-full border-[1.5px] bg-white text-[11px] font-semibold text-[#0f172a] shadow-sm"
     >
-      <Handles />Σ {data.sum} · {data.pct.toFixed(1)}%
+      <Handles />
+      <span className="font-bold">Σ {data.sum} </span>
+      <span className="opacity-70">{` (${data.pct.toFixed(1)}%)`}</span>
     </div>
   );
 }
@@ -667,16 +678,13 @@ function Legend() {
           {label}
         </span>
       ))}
-      <span className="text-[#94a3b8]">
-        Line width = share · dashed = family link · Σ = group sum of share and %
-      </span>
     </div>
   );
 }
 
 /* ----------------------------- Component -------------------------- */
 
-export default function InheritanceGraph(props: GraphInput) {
+function InheritanceGraphInner(props: GraphInput) {
   const graphKey = JSON.stringify(props);
   const initial = buildGraph(props);
 
@@ -684,15 +692,8 @@ export default function InheritanceGraph(props: GraphInput) {
     initial.nodes
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initial.edges);
+  const { fitView } = useReactFlow();
 
-  const wrapperRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, []);
-
-  // Rebuild the layout when the inputs change. Dragged positions are
-  // kept until the inputs change.
   useEffect(() => {
     const g = buildGraph(props);
     setNodes(g.nodes);
@@ -704,13 +705,12 @@ export default function InheritanceGraph(props: GraphInput) {
     const g = buildGraph(props);
     setNodes(g.nodes);
     setEdges(g.edges);
+    // Wait for React to commit the new nodes before fitting the view
+    requestAnimationFrame(() => fitView({ padding: 0.15, duration: 300 }));
   };
 
   return (
-    <div
-      ref={wrapperRef}
-      className="relative left-1/2 mt-2 w-screen -translate-x-1/2 overflow-hidden border-y border-[#e2e8f0] bg-white"
-    >
+    <div className="relative left-1/2 mt-2 w-screen -translate-x-1/2 overflow-hidden border-y border-[#e2e8f0] bg-white">
       <div className="flex items-center justify-end border-b border-[#e2e8f0] px-3 py-1.5">
         <button
           onClick={resetLayout}
@@ -740,5 +740,13 @@ export default function InheritanceGraph(props: GraphInput) {
       </div>
       <Legend />
     </div>
+  );
+}
+
+export default function InheritanceGraph(props: GraphInput) {
+  return (
+    <ReactFlowProvider>
+      <InheritanceGraphInner {...props} />
+    </ReactFlowProvider>
   );
 }
