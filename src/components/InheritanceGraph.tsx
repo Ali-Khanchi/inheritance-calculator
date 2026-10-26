@@ -1,4 +1,4 @@
-import { useEffect, Fragment, type CSSProperties } from 'react';
+import { useEffect, Fragment, type CSSProperties, useRef } from 'react';
 import {
   ReactFlow,
   Background,
@@ -688,6 +688,12 @@ function InheritanceGraphInner(props: GraphInput) {
   const graphKey = JSON.stringify(props);
   const initial = buildGraph(props);
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(
     initial.nodes
   );
@@ -710,7 +716,10 @@ function InheritanceGraphInner(props: GraphInput) {
   };
 
   return (
-    <div className="relative left-1/2 mt-2 w-screen -translate-x-1/2 overflow-hidden border-y border-[#e2e8f0] bg-white">
+    <div
+      ref={wrapperRef}
+      className="relative left-1/2 mt-2 w-screen -translate-x-1/2 overflow-hidden border-y border-[#e2e8f0] bg-white"
+    >
       <div className="flex items-center justify-end border-b border-[#e2e8f0] px-3 py-1.5">
         <button
           onClick={resetLayout}
