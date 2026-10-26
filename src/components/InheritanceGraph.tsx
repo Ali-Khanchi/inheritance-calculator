@@ -14,6 +14,7 @@ import {
 import '@xyflow/react/dist/style.css';
 import type { FirstHeirsState } from '../util/first-group-calculation';
 import type { SecondHeirsState } from '../util/second-group-calculation';
+import FloatingEdge from './FloatingEdge';
 
 /* ----------------------------- Config ----------------------------- */
 
@@ -25,6 +26,7 @@ const POSITION: Record<Side, Position> = {
   left: Position.Left,
   right: Position.Right
 };
+const edgeTypes = { floating: FloatingEdge };
 
 const COLORS = {
   son: '#2563eb',
@@ -176,17 +178,13 @@ const lineage = (p: Person | null, from: Side): NonNullable<Fan['lineage']> =>
 
 const makeEdge = (
   source: string,
-  sourceSide: Side,
   target: string,
-  targetSide: Side,
   style: CSSProperties
 ): Edge => ({
-  id: `${source}:${sourceSide}->${target}:${targetSide}`,
+  id: `${source}->${target}`,
   source,
   target,
-  sourceHandle: `s-${sourceSide}`,
-  targetHandle: `t-${targetSide}`,
-  type: 'smoothstep',
+  type: 'floating',
   style
 });
 
@@ -228,33 +226,20 @@ function addFan(f: Fan, nodes: AppNode[], edges: Edge[]) {
       }
     });
     f.members.forEach((m) =>
-      edges.push(
-        makeEdge(
-          src,
-          f.forkToMembers,
-          m.id,
-          f.memberSide,
-          solid(f.color, m.pct)
-        )
-      )
+      edges.push(makeEdge(src, m.id, solid(m.color, m.pct)))
     );
   } else {
     src = f.members[0].id;
   }
 
-  edges.push(
-    makeEdge(
-      src,
-      f.trunk.from,
-      f.trunk.to,
-      f.trunk.toSide,
-      solid(f.color, groupPct)
-    )
-  );
+  edges.push(makeEdge(src, f.trunk.to, solid(f.color, groupPct)));
 
-  f.lineage?.forEach((l) =>
-    edges.push(makeEdge(src, l.from, l.to, l.toSide, LINEAGE_STYLE))
-  );
+  f.lineage?.forEach((l) => {
+    const id = `deceased->${l.to}`;
+    if (!edges.some((e) => e.id === id)) {
+      edges.push(makeEdge('deceased', l.to, LINEAGE_STYLE));
+    }
+  });
 }
 
 /* --------------------------- Graph builder ------------------------ */
@@ -272,9 +257,11 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
       : []),
     ...make('wife', 'Wife', wives, shares.wife, COLORS.spouse)
   ];
+
   spouses.forEach((p, i) => {
-    p.x = POS.spouseX;
-    p.y = rowX(i, spouses.length, STACK_GAP);
+    // Row above the deceased, between the parents
+    p.x = rowX(i, spouses.length, ROW_GAP);
+    p.y = POS.parentsY;
   });
 
   /* Family counts (second group only) */
@@ -292,6 +279,9 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
   const showMother =
     first.motherAlive || fullCount + matCount > 0 || !!matGrand;
 
+  const fatherPos = { x: -260, y: 0 }; // left of deceased
+  const motherPos = { x: 260, y: 0 }; // right of deceased
+
   const father: Person | null = showFather
     ? {
         id: 'father',
@@ -299,8 +289,8 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
         share: isFirst ? shares.father : undefined,
         color: COLORS.parent,
         variant: isFirst ? 'heir' : 'relative',
-        x: POS.fatherX,
-        y: POS.parentsY
+        x: fatherPos.x,
+        y: fatherPos.y
       }
     : null;
 
@@ -311,15 +301,15 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
         share: isFirst ? shares.mother : undefined,
         color: COLORS.parent,
         variant: isFirst ? 'heir' : 'relative',
-        x: POS.motherX,
-        y: POS.parentsY
+        x: motherPos.x,
+        y: motherPos.y
       }
     : null;
 
   /* Grandparents (second group only) */
   const patGP = isFirst
     ? []
-    : grandparents('pgp', POS.fatherX, [
+    : grandparents('pgp', fatherPos.x, [
         {
           id: 'grandpa',
           label: 'Paternal Grandpa',
@@ -335,7 +325,7 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
       ]);
   const matGP = isFirst
     ? []
-    : grandparents('mgp', POS.motherX, [
+    : grandparents('mgp', motherPos.x, [
         {
           id: 'grandpa',
           label: 'Maternal Grandpa',
@@ -429,6 +419,13 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
     p.y = POS.rowY;
   });
 
+  const sumOf = (ps: Person[]) => ps.reduce((a, p) => a + (p.share ?? 0), 0);
+
+  if (!isFirst) {
+    if (father) father.share = sumOf([...patGP, ...patSibs]);
+    if (mother) mother.share = sumOf([...matGP, ...matSibs]);
+  }
+
   /* Collect every person and compute percentages against the full total */
   const people: Person[] = [
     ...spouses,
@@ -444,8 +441,10 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
   ];
 
   const total =
-    people.reduce((sum, p) => sum + (p.share ?? 0), 0) +
-    (shares.settlement ?? 0);
+    people
+      .filter((p) => p.variant === 'heir')
+      .reduce((sum, p) => sum + (p.share ?? 0), 0) + (shares.settlement ?? 0);
+
   people.forEach((p) => {
     p.pct = total > 0 ? ((p.share ?? 0) / total) * 100 : 0;
   });
@@ -467,45 +466,20 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
     fans.push({
       members: spouses,
       color: COLORS.spouse,
-      fork: { x: POS.spouseForkX, y: 0 },
-      forkToMembers: 'left',
-      memberSide: 'right',
-      trunk: { from: 'right', to: 'deceased', toSide: 'left' }
+      fork: { x: 0, y: -110 },
+      forkToMembers: 'bottom',
+      memberSide: 'top',
+      trunk: { from: 'bottom', to: 'deceased', toSide: 'top' }
     });
   }
 
   if (isFirst) {
-    if (father)
+    const children = [...sons, ...daughters];
+    if (children.length)
       fans.push({
-        members: [father],
-        color: COLORS.parent,
-        forkToMembers: 'bottom',
-        memberSide: 'top',
-        trunk: { from: 'bottom', to: 'deceased', toSide: 'top' }
-      });
-    if (mother)
-      fans.push({
-        members: [mother],
-        color: COLORS.parent,
-        forkToMembers: 'bottom',
-        memberSide: 'top',
-        trunk: { from: 'bottom', to: 'deceased', toSide: 'top' }
-      });
-
-    if (sons.length)
-      fans.push({
-        members: sons,
-        color: COLORS.son,
-        fork: { x: avgX(sons), y: POS.forkY },
-        forkToMembers: 'bottom',
-        memberSide: 'top',
-        trunk: { from: 'top', to: 'deceased', toSide: 'bottom' }
-      });
-    if (daughters.length)
-      fans.push({
-        members: daughters,
-        color: COLORS.daughter,
-        fork: { x: avgX(daughters), y: POS.forkY },
+        members: children,
+        color: COLORS.lineage, // neutral fork colour; members keep their own colour
+        fork: { x: avgX(children), y: POS.forkY },
         forkToMembers: 'bottom',
         memberSide: 'top',
         trunk: { from: 'top', to: 'deceased', toSide: 'bottom' }
@@ -539,8 +513,12 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
         fork: { x: avgX(patSibs), y: POS.forkY },
         forkToMembers: 'bottom',
         memberSide: 'top',
-        trunk: { from: 'top', to: 'deceased', toSide: 'bottom' },
-        lineage: lineage(father, 'left')
+        trunk: {
+          from: 'top',
+          to: father ? 'father' : 'deceased',
+          toSide: 'bottom'
+        },
+        lineage: []
       });
 
     /* Full siblings: trunk to deceased, dashed links to both parents */
@@ -563,13 +541,30 @@ function buildGraph({ group, first, second, shares }: GraphInput) {
         fork: { x: avgX(matSibs), y: POS.forkY },
         forkToMembers: 'bottom',
         memberSide: 'top',
-        trunk: { from: 'top', to: 'deceased', toSide: 'bottom' },
-        lineage: lineage(mother, 'right')
+        trunk: {
+          from: 'top',
+          to: mother ? 'mother' : 'deceased',
+          toSide: 'bottom'
+        },
+        lineage: []
       });
   }
 
   const edges: Edge[] = [];
   fans.forEach((f) => addFan(f, nodes, edges));
+
+  [father, mother].forEach((p) => {
+    if (!p) return;
+    const id = `deceased->${p.id}`;
+    if (edges.some((e) => e.id === id)) return;
+    edges.push(
+      makeEdge(
+        'deceased',
+        p.id,
+        p.variant === 'heir' ? solid(p.color, p.pct) : LINEAGE_STYLE
+      )
+    );
+  });
 
   return { nodes, edges };
 }
@@ -631,9 +626,6 @@ function PersonNode({ data }: NodeProps<Node<PersonData, 'person'>>) {
           <span className="font-bold">{share}</span>{' '}
           <span className="opacity-70">({pct?.toFixed(1)}%)</span>
         </div>
-      )}
-      {isRelative && (
-        <div className="text-[10px] uppercase tracking-wide">deceased</div>
       )}
     </div>
   );
@@ -731,6 +723,7 @@ export default function InheritanceGraph(props: GraphInput) {
         <ReactFlow
           nodes={nodes}
           edges={edges}
+          edgeTypes={edgeTypes}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
